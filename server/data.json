@@ -1,0 +1,187 @@
+{
+  "users": [
+    {
+      "id": "u1778187509108",
+      "name": "Raj Yadav",
+      "phone": "9137093339",
+      "password": "$2b$10$JF9BOYEL.RgtspAaxKEKT.PiYHhi4BIE89JxufCIEjc3PCcceNboG",
+      "role": "farmer",
+      "district": "Satara",
+      "createdAt": "2026-05-07T20:58:29.108Z"
+    }
+  ],
+  "biomassListings": [
+    {
+      "id": "b1",
+      "farmerId": "f1",
+      "name": "Ramesh Patil Farm",
+      "loc": "Pune, Maharashtra • 15 km",
+      "crop": "Sugarcane",
+      "risk": "HIGH",
+      "qty": "12.5 T",
+      "mst": "15.2%",
+      "ndvi": "0.78",
+      "ndti": "0.45",
+      "price": "₹3,500–₹4,000/T",
+      "conf": "95%",
+      "pos": [
+        18.5204,
+        73.8567
+      ]
+    },
+    {
+      "id": "b2",
+      "farmerId": "f2",
+      "name": "Vilasrao Agrotech",
+      "loc": "Nagpur, Maharashtra • 32 km",
+      "crop": "Cotton",
+      "risk": "HIGH",
+      "qty": "8.0 T",
+      "mst": "10.5%",
+      "ndvi": "0.62",
+      "ndti": "0.38",
+      "price": "₹4,200–₹4,800/T",
+      "conf": "88%",
+      "pos": [
+        21.1458,
+        79.0882
+      ]
+    },
+    {
+      "id": "b3",
+      "farmerId": "f3",
+      "name": "Shetkari Organics",
+      "loc": "Nashik, Maharashtra • 25 km",
+      "crop": "Soybean",
+      "risk": "MEDIUM",
+      "qty": "5.2 T",
+      "mst": "12.1%",
+      "ndvi": "0.68",
+      "ndti": "0.41",
+      "price": "₹3,100–₹3,600/T",
+      "conf": "92%",
+      "pos": [
+        19.9975,
+        73.7898
+      ]
+    },
+    {
+      "id": "b4",
+      "farmerId": "f4",
+      "name": "Jadhav Farms Ltd.",
+      "loc": "Satara, Maharashtra • 45 km",
+      "crop": "Sugarcane",
+      "risk": "MEDIUM",
+      "qty": "18.0 T",
+      "mst": "16.8%",
+      "ndvi": "0.82",
+      "ndti": "0.55",
+      "price": "₹2,800–₹3,200/T",
+      "conf": "85%",
+      "pos": [
+        17.6805,
+        74.0183
+      ]
+    },
+    {
+      "id": "b5",
+      "farmerId": "f5",
+      "name": "Kisan Biofuels",
+      "loc": "Vidarbha Region • 80 km",
+      "crop": "Cotton",
+      "risk": "LOW",
+      "qty": "4.5 T",
+      "mst": "9.2%",
+      "ndvi": "0.55",
+      "ndti": "0.32",
+      "price": "₹4,500–₹5,100/T",
+      "conf": "90%",
+      "pos": [
+        20.932,
+        77.7523
+      ]
+    }
+  ],
+  "industryNodes": [
+    {
+      "id": "i1",
+      "name": "Pune Green Energy Hub",
+      "pos": [
+        18.55,
+        73.9
+      ]
+    },
+    {
+      "id": "i2",
+      "name": "Nagpur BioPlastics",
+      "pos": [
+        21.16,
+        79.1
+      ]
+    }
+  ],
+  "riskZones": [
+    {
+      "id": "r1",
+      "pos": [
+        18.6,
+        73.8
+      ],
+      "risk": "HIGH"
+    },
+    {
+      "id": "r2",
+      "pos": [
+        21.2,
+        79.2
+      ],
+      "risk": "HIGH"
+    },
+    {
+      "id": "r3",
+      "pos": [
+        20,
+        73.9
+      ],
+      "risk": "MEDIUM"
+    }
+  ],
+  "polygons": [
+    [
+      [
+        18.5,
+        73.8
+      ],
+      [
+        18.6,
+        73.9
+      ],
+      [
+        18.4,
+        74
+      ],
+      [
+        18.3,
+        73.7
+      ]
+    ],
+    [
+      [
+        21.1,
+        79
+      ],
+      [
+        21.3,
+        79.2
+      ],
+      [
+        21,
+        79.4
+      ],
+      [
+        20.8,
+        79.1
+      ]
+    ]
+  ]
+}

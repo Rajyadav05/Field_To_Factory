@@ -4,3 +4,7 @@ export * from './IndustryDashboard';
 export * from './SatelliteVerification';
 export * from './ImpactDashboard';
 export * from './Roadmap';
+export * from './Login';
+export * from './Register';
+export * from './Platform';
+export * from './TransactionPage';

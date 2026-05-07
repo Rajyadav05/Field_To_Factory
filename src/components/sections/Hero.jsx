@@ -2,6 +2,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { PrimaryButton, SecondaryButton } from '../ui';
 import { ChevronRight, ScanLine } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 const dots = [
   { cx: 170, cy: 80, delay: 0 }, // Punjab
@@ -25,6 +26,8 @@ const paths = [
 ];
 
 export const Hero = () => {
+  const { t } = useTranslation();
+
   return (
     <section className="relative w-full h-[90vh] min-h-[800px] bg-[#0D0D0D] overflow-hidden flex items-center justify-center">
       {/* Ambient Lighting & Layered Gradients */}
@@ -37,7 +40,7 @@ export const Hero = () => {
       <div className="absolute inset-0 z-0 opacity-10 pointer-events-none" 
            style={{ backgroundImage: 'linear-gradient(rgba(255,255,255,0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.05) 1px, transparent 1px)', backgroundSize: '40px 40px' }} />
 
-      {/* Animated India Map Layer */}
+      {/* Animated Maharashtra Map Layer */}
       <div className="absolute inset-0 z-0 flex items-center justify-center opacity-20 pointer-events-none">
         <svg viewBox="0 0 400 400" className="w-[800px] h-[800px] max-w-[150vw]">
           {/* Glowing Drop Shadow Def */}
@@ -48,7 +51,7 @@ export const Hero = () => {
             </filter>
           </defs>
 
-          {/* India Outline (Stylized) */}
+          {/* Map Outline (Stylized) */}
           <polygon 
             points="200,20 230,70 260,130 380,160 390,190 350,210 300,200 260,260 180,380 120,240 90,200 50,170 120,130 160,70" 
             fill="none" 
@@ -119,9 +122,9 @@ export const Hero = () => {
           transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1], delay: 0.1 }}
           className="font-heading font-extrabold text-[56px] md:text-[96px] tracking-tighter leading-[1.05]"
         >
-          <span className="text-white">Eliminate Waste.</span><br />
+          <span className="text-white">{t('hero.title1')}</span><br />
           <span className="bg-clip-text text-transparent bg-gradient-to-r from-[#0B6E4F] via-[#1DB97A] to-[#0B6E4F]">
-            Power Industry.
+            {t('hero.title2')}
           </span>
         </motion.h1>
 
@@ -131,7 +134,7 @@ export const Hero = () => {
           transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1], delay: 0.2 }}
           className="font-sans font-medium text-[18px] md:text-[22px] text-[#A0A0A0] max-w-[640px] mx-auto mt-8 leading-relaxed"
         >
-          The national intelligence protocol converting agricultural residue from an environmental hazard into verified industrial power.
+          {t('hero.subtitle')}
         </motion.p>
 
         <motion.div
@@ -141,11 +144,11 @@ export const Hero = () => {
           className="flex flex-col sm:flex-row items-center justify-center gap-5 mt-12 w-full"
         >
           <PrimaryButton className="w-full sm:w-auto px-8 py-4 text-[15px] font-bold tracking-wide bg-[#0B6E4F] hover:bg-[#1DB97A] border-none shadow-[0_0_30px_rgba(11,110,79,0.3)] hover:shadow-[0_0_40px_rgba(29,185,122,0.5)] transition-all duration-500 group flex items-center justify-center gap-2">
-            Initialize Platform
+            {t('hero.button1')}
             <ChevronRight className="w-5 h-5 opacity-70 group-hover:opacity-100 group-hover:translate-x-1 transition-all" />
           </PrimaryButton>
           <SecondaryButton className="w-full sm:w-auto px-8 py-4 text-[15px] font-semibold tracking-wide border-white/10 hover:border-white/30 hover:bg-white/[0.03] backdrop-blur-md">
-            View Logistics Map
+            {t('hero.button2')}
           </SecondaryButton>
         </motion.div>
 

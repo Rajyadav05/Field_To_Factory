@@ -3,19 +3,28 @@ import { PageTransition } from '../components/layout';
 import { motion, AnimatePresence } from 'framer-motion';
 import { RadialBarChart, RadialBar, PolarAngleAxis } from 'recharts';
 import { Bell, CloudSun, Wheat, Droplets, Wind, Flame, Leaf, MapPin, IndianRupee, Camera, Check, X, Mic, Factory } from 'lucide-react';
-import { AlertButton, PrimaryButton, SecondaryButton, GhostButton } from '../components/ui';
+import { AlertButton, PrimaryButton, SecondaryButton, GhostButton, CropBadge } from '../components/ui';
+import { useAuth } from '../context/AuthContext';
+import { useTranslation } from 'react-i18next';
+import { farmerService } from '../services/farmerService';
 
-const ResidueListingModal = ({ isOpen, onClose }) => {
+const MarathiPattern = () => (
+  <svg className="absolute inset-0 w-full h-full opacity-[0.03] pointer-events-none" xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100">
+    <path d="M50 20 L60 40 L40 40 Z M50 60 L60 80 L40 80 Z" fill="none" stroke="#FFFFFF" strokeWidth="1" />
+    <circle cx="50" cy="50" r="3" fill="#FFFFFF" />
+    <path d="M20 50 L40 60 L40 40 Z M80 50 L60 60 L60 40 Z" fill="none" stroke="#FFFFFF" strokeWidth="1" />
+  </svg>
+);
+
+const ResidueListingModal = ({ isOpen, onClose, user, onListingCreated }) => {
+  const { t } = useTranslation();
   const [step, setStep] = useState(1);
   const [crop, setCrop] = useState('');
-  const [isSuccess, setIsSuccess] = useState(false);
   const [estimating, setEstimating] = useState(true);
 
   useEffect(() => {
     if (isOpen) {
-      setStep(1);
-      setCrop('');
-      setIsSuccess(false);
+      setStep(1); setCrop('');
     }
   }, [isOpen]);
 
@@ -27,229 +36,124 @@ const ResidueListingModal = ({ isOpen, onClose }) => {
     }
   }, [step]);
 
-  const handleNext = () => setStep(s => Math.min(s + 1, 6));
-  const handleBack = () => setStep(s => Math.max(s - 1, 1));
-  const handleSubmit = () => {
-    setIsSuccess(true);
-    setTimeout(() => {
-      onClose();
-    }, 2500);
+  const handleConfirm = async () => {
+    const listing = await farmerService.createListing({
+      farmerId: user.id,
+      farmerName: user.name,
+      crop: crop,
+      loc: `${user.district}, MH`,
+      pos: [20.7 + (Math.random()*0.1), 78.6 + (Math.random()*0.1)], // Random nearby pos
+      qty: '8.4'
+    });
+    onListingCreated(listing);
+    setStep(6);
   };
-
-  const crops = [
-    { id: 'rice', name: 'Rice', icon: '🌾' },
-    { id: 'wheat', name: 'Wheat', icon: '🌾' },
-    { id: 'sugarcane', name: 'Sugarcane', icon: '🎋' },
-    { id: 'cotton', name: 'Cotton', icon: '☁️' },
-    { id: 'maize', name: 'Maize', icon: '🌽' },
-    { id: 'other', name: 'Other', icon: '🌱' },
-  ];
 
   return (
     <AnimatePresence>
       {isOpen && (
         <motion.div 
-          initial={{ opacity: 0, y: "100%" }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: "100%" }}
-          transition={{ type: "spring", damping: 25, stiffness: 200 }}
-          className="fixed inset-0 z-50 flex justify-center md:items-center bg-[#0F1A14] md:bg-black/80 backdrop-blur-md"
+          initial={{ opacity: 0, y: "100%" }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: "100%" }}
+          className="fixed inset-0 z-[1000] flex justify-center md:items-center bg-[#050505]/90 backdrop-blur-xl"
         >
-          {isSuccess ? (
-             <div className="w-full h-full md:max-w-[480px] md:h-[80vh] md:rounded-2xl bg-[#0F1A14] flex flex-col items-center justify-center px-6 text-center">
-                <motion.div 
-                  initial={{ scale: 0 }}
-                  animate={{ scale: 1 }}
-                  transition={{ type: "spring", damping: 15, stiffness: 200 }}
-                  className="w-24 h-24 rounded-full bg-[#1DB97A]/20 border-2 border-[#1DB97A] flex items-center justify-center mb-6 relative"
-                >
-                  <motion.div
-                    animate={{ scale: [1, 1.5, 1], opacity: [0.5, 0, 0.5] }}
-                    transition={{ duration: 1.5, repeat: Infinity, ease: "easeOut" }}
-                    className="absolute inset-0 rounded-full border border-[#1DB97A]"
-                  />
-                  <Check size={48} className="text-[#1DB97A]" />
-                </motion.div>
-                <h2 className="font-heading font-bold text-[28px] text-white mb-2">Listing Submitted!</h2>
-                <p className="text-[#A0A0A0] text-[16px]">Industries have been alerted in your radius.</p>
-             </div>
-          ) : (
-            <div className="w-full h-full md:max-w-[480px] md:h-[80vh] md:rounded-2xl bg-[#0F1A14] flex flex-col shadow-2xl border border-white/5 relative">
-              {/* Header: Step Indicator & Close */}
-              <div className="flex items-center justify-between px-6 pt-6 pb-4">
-                <div className="flex gap-2">
-                  {[1, 2, 3, 4, 5, 6].map(i => (
-                    <div 
-                      key={i} 
-                      className={`h-1.5 w-8 rounded-full transition-colors duration-300 ${
-                        i === step ? 'bg-[#1DB97A]' : i < step ? 'bg-[#1DB97A]/50' : 'bg-white/20'
-                      }`} 
-                    />
-                  ))}
-                </div>
-                <button onClick={onClose} className="p-2 -mr-2 text-[#A0A0A0] hover:text-white transition-colors">
-                  <X size={24} />
-                </button>
-              </div>
-
-              {/* Step Content */}
-              <div className="flex-1 overflow-y-auto px-6 py-4 flex flex-col">
-                
-                {step === 1 && (
-                  <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }}>
-                    <h3 className="font-heading font-bold text-[24px] text-white text-center mb-8">What did you harvest?</h3>
-                    <div className="grid grid-cols-3 gap-4">
-                      {crops.map(c => {
-                        const isSelected = crop === c.id;
-                        return (
-                          <div 
-                            key={c.id}
-                            onClick={() => setCrop(c.id)}
-                            className={`cursor-pointer rounded-xl p-4 flex flex-col items-center justify-center gap-2 transition-all duration-200 ${
-                              isSelected 
-                                ? 'bg-[#1DB97A]/[0.12] border-2 border-[#1DB97A]' 
-                                : 'bg-white/[0.04] border-2 border-white/5 hover:border-white/20'
-                            }`}
-                          >
-                            <span className="text-[28px]">{c.icon}</span>
-                            <span className={`text-[12px] font-semibold ${isSelected ? 'text-[#1DB97A]' : 'text-white'}`}>{c.name}</span>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </motion.div>
-                )}
-
-                {step === 2 && (
-                  <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="flex flex-col h-full">
-                    <h3 className="font-heading font-bold text-[24px] text-white text-center mb-8">Photo of your field</h3>
-                    <div className="w-full h-48 border-2 border-dashed border-white/20 rounded-xl flex flex-col items-center justify-center gap-3 bg-white/[0.02] mb-6">
-                      <Camera size={48} className="text-[#A0A0A0]" />
-                      <span className="text-[#A0A0A0] text-[14px]">Tap to take photo or upload</span>
-                    </div>
-                    <SecondaryButton className="w-full border-white/10 text-white hover:bg-white/5">
-                      Upload from gallery
-                    </SecondaryButton>
-                  </motion.div>
-                )}
-
-                {step === 3 && (
-                  <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="flex flex-col h-full items-center text-center">
-                    <h3 className="font-heading font-bold text-[24px] text-white mb-10">Your field location</h3>
-                    <div className="relative mb-6">
-                      <motion.div
-                        animate={{ scale: [1, 2, 1], opacity: [1, 0, 1] }}
-                        transition={{ duration: 2, repeat: Infinity, ease: "easeOut" }}
-                        className="absolute inset-0 bg-[#1DB97A]/30 rounded-full blur-md"
-                      />
-                      <MapPin size={48} className="text-[#1DB97A] relative z-10" />
-                    </div>
-                    <div className="bg-[#111111] border border-white/10 rounded-xl p-4 w-full mb-6">
-                      <p className="text-white text-[16px] font-semibold mb-1">Ludhiana, Punjab</p>
-                      <p className="text-[#A0A0A0] text-[13px] font-mono">30.9010°N, 75.8573°E</p>
-                    </div>
-                    <div className="w-full h-32 rounded-lg bg-[#1a2a1a] border border-[#1DB97A]/20 relative overflow-hidden">
-                      {/* Fake Map Grid Pattern */}
-                      <div className="absolute inset-0 opacity-10" style={{ backgroundImage: 'radial-gradient(#1DB97A 1px, transparent 1px)', backgroundSize: '16px 16px' }} />
-                      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-3 h-3 bg-[#1DB97A] rounded-full shadow-[0_0_12px_#1DB97A]" />
-                    </div>
-                  </motion.div>
-                )}
-
-                {step === 4 && (
-                  <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="flex flex-col h-full items-center justify-center text-center">
-                    <h3 className="font-heading font-bold text-[24px] text-white mb-10">Estimating your residue...</h3>
-                    
-                    {estimating ? (
-                      <div className="w-full max-w-[240px] h-1.5 bg-[#111111] rounded-full overflow-hidden relative">
-                        <motion.div 
-                          className="absolute top-0 bottom-0 w-1/2 bg-gradient-to-r from-transparent via-[#1DB97A] to-transparent"
-                          initial={{ left: "-50%" }}
-                          animate={{ left: "100%" }}
-                          transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-                        />
-                      </div>
-                    ) : (
-                      <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="flex flex-col items-center">
-                        <h3 className="font-heading font-bold text-[36px] text-[#1DB97A] leading-none mb-4">4.2 Tonnes</h3>
-                        <div className="bg-[#1DB97A]/10 border border-[#1DB97A]/30 text-[#1DB97A] text-[12px] font-bold px-3 py-1 rounded-full uppercase tracking-wider">
-                          AI Confidence: 91%
-                        </div>
-                      </motion.div>
-                    )}
-                  </motion.div>
-                )}
-
-                {step === 5 && (
-                  <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="flex flex-col h-full text-center">
-                    <h3 className="font-heading font-bold text-[24px] text-white mb-8">Recommended price</h3>
-                    <div className="bg-[#1DB97A]/[0.08] border border-[#1DB97A]/20 rounded-2xl p-8 mb-8">
-                      <div className="font-heading font-bold text-[40px] text-[#1DB97A] leading-none mb-1">
-                        ₹3,400 – ₹3,800
-                      </div>
-                      <div className="text-[#A0A0A0] text-[18px]">/tonne</div>
-                    </div>
-                    <div className="flex flex-col items-center gap-2">
-                      <div className="w-full max-w-[280px] h-2 bg-[#111111] rounded-full relative">
-                        <div className="absolute left-[30%] right-[20%] h-full bg-[#1DB97A] rounded-full" />
-                        <div className="absolute left-[40%] top-4 w-0.5 h-3 bg-white/20" />
-                      </div>
-                      <div className="text-[#A0A0A0] text-[13px] mt-2">Market avg <span className="text-white font-semibold">₹3,200</span></div>
-                    </div>
-                  </motion.div>
-                )}
-
-                {step === 6 && (
-                  <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="flex flex-col h-full">
-                    <h3 className="font-heading font-bold text-[24px] text-white text-center mb-6">Confirm Listing</h3>
-                    <div className="bg-[#111111] border border-white/5 rounded-xl p-5 flex flex-col gap-4 mb-auto">
-                      <div className="flex justify-between items-center pb-4 border-b border-white/5">
-                        <span className="text-[#A0A0A0] text-[14px]">Crop Type</span>
-                        <span className="text-white font-semibold capitalize flex items-center gap-2">
-                          {crop || 'Wheat'} <Wheat size={16} className="text-[#1DB97A]"/>
-                        </span>
-                      </div>
-                      <div className="flex justify-between items-center pb-4 border-b border-white/5">
-                        <span className="text-[#A0A0A0] text-[14px]">Estimated Qty</span>
-                        <span className="text-white font-semibold">4.2 Tonnes</span>
-                      </div>
-                      <div className="flex justify-between items-center pb-4 border-b border-white/5">
-                        <span className="text-[#A0A0A0] text-[14px]">Listing Price</span>
-                        <span className="text-[#1DB97A] font-bold">₹3,400 / tonne</span>
-                      </div>
-                      <div className="flex justify-between items-center">
-                        <span className="text-[#A0A0A0] text-[14px]">Location</span>
-                        <span className="text-white font-semibold text-right">Ludhiana, PB</span>
-                      </div>
-                    </div>
-                  </motion.div>
-                )}
-              </div>
-
-              {/* Footer: Navigation */}
-              <div className="p-6 border-t border-white/5 flex gap-4">
-                {step > 1 && (
-                  <GhostButton onClick={handleBack} className="flex-1 h-[52px]">
-                    Back
-                  </GhostButton>
-                )}
-                {step < 6 ? (
-                  <PrimaryButton 
-                    onClick={handleNext} 
-                    className="flex-[2] h-[52px]"
-                    disabled={step === 1 && !crop || step === 4 && estimating}
-                  >
-                    Next
-                  </PrimaryButton>
-                ) : (
-                  <PrimaryButton onClick={handleSubmit} className="flex-[2] h-[52px]">
-                    Submit Listing
-                  </PrimaryButton>
-                )}
-              </div>
-
+          <div className="w-full h-full md:max-w-[480px] md:h-[80vh] md:rounded-2xl bg-[#0A0A0A] border border-[#1DB97A]/20 flex flex-col shadow-[0_0_50px_rgba(29,185,122,0.1)] relative overflow-hidden">
+            <MarathiPattern />
+            
+            <div className="flex items-center justify-between px-6 pt-6 pb-4 relative z-10 border-b border-white/5">
+              <span className="font-mono text-[10px] text-[#1DB97A] uppercase tracking-widest">Listing Protocol // Step {step}/6</span>
+              <button onClick={onClose} className="p-2 -mr-2 text-[#A0A0A0] hover:text-white"><X size={20} /></button>
             </div>
-          )}
+
+            <div className="flex-1 overflow-y-auto px-6 py-8 flex flex-col relative z-10">
+              {step === 1 && (
+                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+                  <h3 className="font-heading font-bold text-[24px] text-white text-center mb-8">{t('farmer.upload_listing', 'Select Crop Residue')}</h3>
+                  <div className="grid grid-cols-2 gap-4">
+                    {['Sugarcane', 'Cotton', 'Rice', 'Wheat'].map(c => (
+                      <div 
+                        key={c} onClick={() => setCrop(c)}
+                        className={`cursor-pointer rounded-lg p-6 flex flex-col items-center justify-center gap-3 transition-all ${crop === c ? 'bg-[#1DB97A]/10 border border-[#1DB97A]' : 'bg-[#111111] border border-white/5 hover:border-white/20'}`}
+                      >
+                        <span className={`font-mono text-[14px] font-bold uppercase tracking-wider ${crop === c ? 'text-[#1DB97A]' : 'text-white'}`}>{c}</span>
+                      </div>
+                    ))}
+                  </div>
+                </motion.div>
+              )}
+              {step === 2 && (
+                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex flex-col items-center h-full text-center">
+                  <h3 className="font-heading font-bold text-[24px] text-white mb-6">Capture Field Telemetry</h3>
+                  <div className="w-full h-48 border border-dashed border-[#00E5FF]/40 rounded-lg flex flex-col items-center justify-center gap-3 bg-[#00E5FF]/5 mb-6 text-[#00E5FF]">
+                    <Camera size={40} />
+                    <span className="font-mono text-[11px] uppercase tracking-widest">Awaiting Visual Data</span>
+                  </div>
+                </motion.div>
+              )}
+              {step === 3 && (
+                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex flex-col items-center h-full text-center">
+                  <h3 className="font-heading font-bold text-[24px] text-white mb-8">Location Sync</h3>
+                  <div className="relative mb-6">
+                    <div className="absolute inset-0 bg-[#00E5FF]/30 blur-xl rounded-full animate-pulse" />
+                    <MapPin size={48} className="text-[#00E5FF] relative z-10" />
+                  </div>
+                  <div className="bg-[#111111] border border-white/5 p-4 w-full rounded-lg font-mono">
+                    <div className="text-white text-[14px] mb-1">{user.district}, Maharashtra</div>
+                    <div className="text-[#00E5FF] text-[11px]">LAT: 20.7453°N | LNG: 78.6022°E</div>
+                  </div>
+                </motion.div>
+              )}
+              {step === 4 && (
+                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex flex-col h-full items-center justify-center text-center">
+                  <h3 className="font-heading font-bold text-[24px] text-white mb-8">AI Estimation</h3>
+                  {estimating ? (
+                    <div className="w-full h-1 bg-[#111111] overflow-hidden relative">
+                      <motion.div className="absolute top-0 bottom-0 w-1/2 bg-[#1DB97A]" initial={{ left: "-50%" }} animate={{ left: "100%" }} transition={{ duration: 1, repeat: Infinity }} />
+                    </div>
+                  ) : (
+                    <motion.div initial={{ scale: 0.9 }} animate={{ scale: 1 }}>
+                      <h3 className="font-heading font-bold text-[48px] text-[#1DB97A] leading-none mb-2">8.4 T</h3>
+                      <div className="text-[#00E5FF] font-mono text-[10px] tracking-widest uppercase border border-[#00E5FF]/30 px-3 py-1 bg-[#00E5FF]/10 rounded-sm">Confidence: 94.2%</div>
+                    </motion.div>
+                  )}
+                </motion.div>
+              )}
+              {step === 5 && (
+                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex flex-col h-full items-center text-center">
+                  <h3 className="font-heading font-bold text-[24px] text-white mb-8">Market Pricing</h3>
+                  <div className="bg-[#FFD700]/10 border border-[#FFD700]/30 p-8 w-full rounded-lg mb-4">
+                    <div className="font-heading font-bold text-[40px] text-[#FFD700] leading-none mb-2">₹3,400</div>
+                    <div className="text-[#FFD700]/70 font-mono text-[10px] uppercase tracking-widest">Suggested Rate / Tonne</div>
+                  </div>
+                </motion.div>
+              )}
+              {step === 6 && (
+                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex flex-col h-full text-center items-center justify-center">
+                  <div className="w-24 h-24 bg-[#1DB97A]/20 border border-[#1DB97A] rounded-full flex items-center justify-center mb-6">
+                    <Check size={40} className="text-[#1DB97A]" />
+                  </div>
+                  <h3 className="font-heading font-bold text-[28px] text-white mb-2">Listing Active</h3>
+                  <p className="text-[#A0A0A0] text-[14px]">Nearby industries have been pinged.</p>
+                </motion.div>
+              )}
+            </div>
+
+            <div className="p-6 border-t border-white/5 flex gap-4 relative z-10 bg-[#0A0A0A]">
+              {step > 1 && step < 6 && <GhostButton onClick={() => setStep(s=>s-1)} className="flex-1 font-mono uppercase tracking-widest text-[11px]">{t('farmer.cancel', 'Back')}</GhostButton>}
+              {step < 5 && (
+                <PrimaryButton onClick={() => setStep(s=>s+1)} disabled={step===1&&!crop || step===4&&estimating} className="flex-[2] bg-[#1DB97A] text-[#050505] font-mono uppercase tracking-widest text-[11px]">
+                  Proceed
+                </PrimaryButton>
+              )}
+              {step === 5 && (
+                <PrimaryButton onClick={handleConfirm} className="flex-[2] bg-[#1DB97A] text-[#050505] font-mono uppercase tracking-widest text-[11px]">
+                  {t('farmer.submit', 'Confirm')}
+                </PrimaryButton>
+              )}
+              {step === 6 && (
+                <PrimaryButton onClick={onClose} className="w-full bg-[#1DB97A] text-[#050505] font-mono uppercase tracking-widest text-[11px]">Return to Dash</PrimaryButton>
+              )}
+            </div>
+          </div>
         </motion.div>
       )}
     </AnimatePresence>
@@ -257,233 +161,173 @@ const ResidueListingModal = ({ isOpen, onClose }) => {
 };
 
 export const FarmerApp = () => {
-  const [lang, setLang] = useState('EN');
+  const { user } = useAuth();
+  const { t, i18n } = useTranslation();
   const [isListingModalOpen, setIsListingModalOpen] = useState(false);
+  const [myListings, setMyListings] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchListings = async () => {
+      if (user) {
+        const listings = await farmerService.getMyListings(user.id);
+        setMyListings(listings);
+      }
+      setLoading(false);
+    };
+    fetchListings();
+  }, [user]);
+
+  const handleListingCreated = (newListing) => {
+    setMyListings([...myListings, newListing]);
+  };
+
+  const changeLanguage = (lng) => {
+    i18n.changeLanguage(lng);
+  };
+
+  if (!user || loading) return null;
 
   return (
-    <PageTransition className="w-full min-h-[calc(100vh-72px)] bg-[#0F1A14] flex flex-col">
-      <ResidueListingModal isOpen={isListingModalOpen} onClose={() => setIsListingModalOpen(false)} />
+    <PageTransition className="w-full min-h-[calc(100vh-80px)] bg-[#050505] flex flex-col relative">
+      
+      {/* Background Stylings */}
+      <div className="absolute inset-0 pointer-events-none overflow-hidden">
+         <MarathiPattern />
+         <div className="absolute top-0 right-0 w-[400px] h-[400px] bg-[#FF8F00]/5 blur-[120px] rounded-full" />
+      </div>
 
-      <div className="w-full max-w-[480px] mx-auto px-4 py-6 md:border md:border-[#1DB97A]/20 md:rounded-2xl md:mt-8 md:mb-8 bg-[#0F1A14] flex-grow shadow-[0_0_40px_rgba(29,185,122,0.03)]">
+      <ResidueListingModal isOpen={isListingModalOpen} onClose={() => setIsListingModalOpen(false)} user={user} onListingCreated={handleListingCreated} />
+
+      <div className="w-full max-w-[480px] mx-auto px-4 py-6 md:border md:border-[#1DB97A]/20 md:rounded-lg md:mt-8 md:mb-8 bg-[#0A0A0A]/80 backdrop-blur-md flex-grow shadow-[0_0_40px_rgba(29,185,122,0.05)] relative z-10">
         
         {/* TOP BAR */}
-        <div className="flex justify-between items-center mb-6">
+        <div className="flex justify-between items-center mb-8 border-b border-white/5 pb-4">
           <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-full bg-[#1DB97A]/20 border border-[#1DB97A]/40 flex items-center justify-center text-[#1DB97A] font-bold text-lg">
-              HS
+            <div className="w-10 h-10 bg-[#1DB97A]/20 border border-[#1DB97A]/40 flex items-center justify-center text-[#1DB97A] font-bold">
+              {user.name.substring(0, 2).toUpperCase()}
             </div>
             <div>
-              <div className="font-sans font-semibold text-[18px] text-white leading-tight">
-                Namaste, Harinder Singh <span className="inline-block">👋</span>
+              <div className="font-mono font-bold text-[14px] text-white uppercase tracking-wider">
+                {user.name}
               </div>
-              <div className="font-sans text-[12px] text-[#A0A0A0] mt-0.5">
-                Ludhiana, Punjab
+              <div className="font-mono text-[10px] text-[#A0A0A0] uppercase tracking-widest">
+                {user.district}, MH
               </div>
             </div>
           </div>
-          <div className="flex items-center gap-3">
-            <div className="flex bg-[#111111] rounded-lg border border-white/5 p-1 h-[44px] items-center">
-              {['EN', 'PN', 'HI'].map((l) => (
+          <div className="flex items-center gap-2">
+            <div className="flex bg-[#111111] border border-white/5 p-1 items-center">
+              {['en', 'mr', 'hi'].map((l) => (
                 <button
-                  key={l}
-                  onClick={() => setLang(l)}
-                  className={`text-[12px] font-bold px-2 py-1 h-full rounded transition-colors flex items-center justify-center ${
-                    lang === l ? 'bg-[#1DB97A] text-[#0D0D0D]' : 'text-[#A0A0A0] hover:text-white'
-                  }`}
-                  style={{ minWidth: '40px' }}
+                  key={l} onClick={() => changeLanguage(l)}
+                  className={`text-[10px] font-mono font-bold px-2 py-1 transition-colors uppercase ${i18n.language === l ? 'bg-[#1DB97A] text-[#050505]' : 'text-[#A0A0A0]'}`}
                 >
                   {l}
                 </button>
               ))}
             </div>
-            <button className="relative w-12 h-12 rounded-full flex items-center justify-center bg-white/5 border border-white/10 text-white hover:bg-white/10 transition-colors">
-              <Bell size={20} />
-              <div className="absolute top-3 right-3 w-2.5 h-2.5 bg-[#FF8F00] rounded-full border-2 border-[#0F1A14]" />
-            </button>
           </div>
         </div>
 
-        {/* WEATHER + CROP ROW */}
-        <div className="grid grid-cols-2 gap-3 mb-6">
-          <div className="bg-[#2F80ED]/[0.06] border border-[#2F80ED]/20 backdrop-blur-md rounded-xl p-4 flex flex-col justify-between h-[110px]">
-            <div className="flex justify-between items-start">
-              <CloudSun size={24} className="text-[#2F80ED]" />
-              <div className="text-right">
-                <div className="font-bold text-[24px] text-white leading-none">28°C</div>
-                <div className="text-[#A0A0A0] text-[12px] mt-1">Ludhiana</div>
-              </div>
-            </div>
-            <div className="flex items-center justify-between text-[11px] text-[#A0A0A0] font-medium">
-              <span className="flex items-center gap-1.5"><Droplets size={12} className="text-[#2F80ED]"/> 62%</span>
-              <span className="flex items-center gap-1.5"><Wind size={12} className="text-[#A0A0A0]"/> 14 km/h</span>
-            </div>
-          </div>
-          <div className="bg-[#1DB97A]/[0.06] border border-[#1DB97A]/20 backdrop-blur-md rounded-xl p-4 flex flex-col justify-between h-[110px]">
-            <div>
-              <div className="flex items-center gap-2 mb-1">
-                <Wheat size={18} className="text-[#FF8F00]" />
-                <span className="font-semibold text-[15px] text-white leading-none">Wheat Season</span>
-              </div>
-              <div className="text-[#A0A0A0] text-[12px]">18 days to harvest</div>
-            </div>
-            <div className="mt-2">
-              <div className="w-full h-1.5 bg-[#1a1a1a] rounded-full overflow-hidden">
-                <div className="h-full bg-[#1DB97A] rounded-full" style={{ width: '75%' }} />
-              </div>
-            </div>
-          </div>
+        {/* GLOWING PROGRESS RING - HARVEST READINESS */}
+        <div className="flex items-center justify-center mb-8">
+           <div className="relative w-[180px] h-[180px]">
+             <div className="absolute inset-0 rounded-full border border-white/5 pointer-events-none" />
+             <RadialBarChart width={180} height={180} cx={90} cy={90} innerRadius={70} outerRadius={90} barSize={8} data={[{ name: 'Harvest', value: 85, fill: '#FF8F00' }]} startAngle={90} endAngle={-270}>
+               <PolarAngleAxis type="number" domain={[0, 100]} angleAxisId={0} tick={false} />
+               <RadialBar background={{ fill: 'rgba(255,255,255,0.05)' }} dataKey="value" cornerRadius={0} />
+             </RadialBarChart>
+             <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+                <span className="font-heading font-bold text-[32px] text-[#FF8F00] leading-none">85%</span>
+                <span className="font-mono text-[9px] uppercase tracking-widest text-[#FF8F00]/70 mt-1">{user.cropType || 'Crop'} Readiness</span>
+             </div>
+           </div>
         </div>
 
-        {/* ACTION GRID */}
-        <div className="grid grid-cols-2 gap-3 mb-6">
-          <motion.div 
-            whileTap={{ scale: 0.96 }}
+        {/* EARNINGS */}
+        <div className="bg-[#111111] border border-white/5 p-5 mb-8 flex justify-between items-center">
+          <div>
+            <div className="text-[#A0A0A0] text-[10px] font-mono uppercase tracking-widest mb-1">{t('farmer.total_earnings', 'Total Earnings')}</div>
+            <div className="text-white font-heading font-bold text-[24px]">₹{user.totalEarnings?.toLocaleString() || '0'}</div>
+          </div>
+          <button 
             onClick={() => setIsListingModalOpen(true)}
-            className="cursor-pointer bg-[#1DB97A]/[0.08] border border-white/5 hover:border-[#1DB97A]/40 transition-colors backdrop-blur-md rounded-xl p-5 flex flex-col items-center justify-center gap-3 shadow-[0_4px_24px_rgba(0,0,0,0.2)]"
+            className="bg-[#1DB97A] hover:bg-[#159461] text-[#050505] font-mono text-[10px] font-bold uppercase tracking-widest py-2 px-4 transition-colors"
           >
-            <Leaf size={40} className="text-[#1DB97A]" />
-            <span className="text-white text-[14px] font-semibold">Sell Residue</span>
-          </motion.div>
-          <motion.div 
-            whileTap={{ scale: 0.96 }}
-            className="cursor-pointer bg-[#FF8F00]/[0.08] border border-white/5 hover:border-[#FF8F00]/40 transition-colors backdrop-blur-md rounded-xl p-5 flex flex-col items-center justify-center gap-3 shadow-[0_4px_24px_rgba(0,0,0,0.2)]"
-          >
-            <Flame size={40} className="text-[#FF8F00]" />
-            <span className="text-white text-[14px] font-semibold">Risk Alert</span>
-          </motion.div>
-          <motion.div 
-            whileTap={{ scale: 0.96 }}
-            className="cursor-pointer bg-[#2F80ED]/[0.08] border border-white/5 hover:border-[#2F80ED]/40 transition-colors backdrop-blur-md rounded-xl p-5 flex flex-col items-center justify-center gap-3 shadow-[0_4px_24px_rgba(0,0,0,0.2)]"
-          >
-            <MapPin size={40} className="text-[#2F80ED]" />
-            <span className="text-white text-[14px] font-semibold">Nearby Buyers</span>
-          </motion.div>
-          <motion.div 
-            whileTap={{ scale: 0.96 }}
-            className="cursor-pointer bg-[#FFD700]/[0.08] border border-white/5 hover:border-[#FFD700]/40 transition-colors backdrop-blur-md rounded-xl p-5 flex flex-col items-center justify-center gap-3 shadow-[0_4px_24px_rgba(0,0,0,0.2)]"
-          >
-            <IndianRupee size={40} className="text-[#FFD700]" />
-            <span className="text-white text-[14px] font-semibold">My Earnings</span>
-          </motion.div>
+            {t('farmer.sell_residue', 'Sell Residue')}
+          </button>
         </div>
 
-        {/* BURN RISK ALERT CARD */}
-        <div className="mb-4 bg-[#FF8F00]/[0.08] border-2 border-[#FF8F00] rounded-xl p-5 shadow-[0_0_20px_rgba(255,143,0,0.2)]">
-          <div className="flex items-center gap-2 mb-3">
-            <motion.div
-              animate={{ y: [0, -3, 0] }}
-              transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
-            >
-              <Flame size={16} className="text-[#FF8F00]" />
-            </motion.div>
-            <div className="text-[#FF8F00] text-[11px] uppercase tracking-widest font-bold">
-              HIGH BURN RISK
+        {/* WEATHER & TELEMETRY ROW */}
+        <div className="grid grid-cols-2 gap-3 mb-8">
+          <div className="bg-[#050505] border border-[#00E5FF]/20 p-4 flex flex-col justify-between h-[90px]">
+            <div className="flex justify-between items-start">
+              <span className="font-mono text-[10px] text-[#00E5FF] uppercase tracking-widest">{t('farmer.forecast', 'Weather')}</span>
+              <CloudSun size={14} className="text-[#00E5FF]" />
             </div>
+            <div className="font-heading font-bold text-[24px] text-white">32°C</div>
           </div>
-          <h3 className="text-white text-[16px] font-semibold">
-            Burn risk detected in your zone
-          </h3>
-          <p className="text-[#A0A0A0] text-[14px] mt-1 mb-5 leading-snug">
-            Punjab Zone 3 — Next 72 hours. Sell now and earn ₹8,200.
-          </p>
-          <AlertButton className="w-full h-[52px] text-[15px] flex justify-center items-center gap-2">
-            <span>🔥</span> Sell Residue Now — Earn ₹8,200
-          </AlertButton>
-        </div>
-
-        {/* FARMER ANALYTICS SECTION */}
-        <div className="mt-6">
-          <h2 className="font-sans font-semibold text-[18px] text-white mb-4">Your Impact</h2>
-          <div className="grid grid-cols-2 gap-3">
-            {[
-              { title: 'Total Earned', value: '₹24,600', color: '#FFD700' },
-              { title: 'Residue Sold', value: '7.2 Tonnes', color: '#FFFFFF' },
-              { title: 'Carbon Saved', value: '4,100 kg', color: '#2F80ED' },
-              { isChart: true, title: 'Impact Score' }
-            ].map((stat, i) => (
-              <motion.div
-                key={i}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: i * 0.1, duration: 0.5, ease: "easeOut" }}
-                className="bg-white/[0.04] border border-white/5 backdrop-blur-md rounded-xl p-5 flex flex-col justify-center shadow-[0_4px_24px_rgba(0,0,0,0.2)] min-h-[140px]"
-              >
-                {stat.isChart ? (
-                  <div className="flex flex-col items-center justify-center">
-                    <div className="w-[80px] h-[80px] relative">
-                      <RadialBarChart width={80} height={80} cx={40} cy={40} innerRadius={30} outerRadius={40} barSize={6} data={[{ name: 'Score', value: 87, fill: '#FF8F00' }]} startAngle={90} endAngle={-270}>
-                        <PolarAngleAxis type="number" domain={[0, 100]} angleAxisId={0} tick={false} />
-                        <RadialBar background={{ fill: '#1a1a1a' }} dataKey="value" cornerRadius={10} />
-                        <text x={40} y={40} textAnchor="middle" dominantBaseline="middle" className="fill-white font-bold text-[18px]">87</text>
-                      </RadialBarChart>
-                    </div>
-                    <div className="text-[#A0A0A0] text-[12px] uppercase tracking-wider font-semibold mt-2">{stat.title}</div>
-                  </div>
-                ) : (
-                  <>
-                    <div className="font-heading font-bold text-[28px] leading-none mb-1" style={{ color: stat.color }}>{stat.value}</div>
-                    <div className="text-[#A0A0A0] text-[12px] uppercase tracking-wider font-semibold">{stat.title}</div>
-                  </>
-                )}
-              </motion.div>
-            ))}
+          <div className="bg-[#050505] border border-[#1DB97A]/20 p-4 flex flex-col justify-between h-[90px]">
+            <div className="flex justify-between items-start">
+              <span className="font-mono text-[10px] text-[#1DB97A] uppercase tracking-widest">{t('farmer.moisture', 'Moisture')}</span>
+              <Droplets size={14} className="text-[#1DB97A]" />
+            </div>
+            <div className="font-heading font-bold text-[24px] text-white">42%</div>
           </div>
         </div>
 
-        {/* NEARBY BUYERS SECTION */}
-        <div className="mt-8 pb-8">
-          <h2 className="font-sans font-semibold text-[18px] text-white mb-4">Nearby Buyers</h2>
-          <div className="flex flex-col gap-3">
-            {[
-              { name: 'GreenPower Biogas Plant', distance: 'Ludhiana • 12 km', price: '₹3,600/T', crop: 'Rice Straw' },
-              { name: 'BioFuel Corp', distance: 'Khanna • 18 km', price: '₹3,450/T', crop: 'Wheat Straw' },
-              { name: 'EcoEnergy Papers', distance: 'Jalandhar • 24 km', price: '₹3,800/T', crop: 'Rice Straw' }
-            ].map((buyer, i) => (
-              <div key={i} className="bg-white/[0.04] border border-white/5 backdrop-blur-md rounded-xl p-4 flex items-center justify-between shadow-[0_4px_24px_rgba(0,0,0,0.2)] gap-2">
-                <div className="flex items-center gap-4 min-w-0">
-                  <div className="w-10 h-10 shrink-0 rounded-full bg-[#2F80ED]/20 text-[#2F80ED] flex items-center justify-center border border-[#2F80ED]/30">
-                    <Factory size={20} />
+        {/* PULSING BURN RISK ALERT */}
+        <motion.div 
+          animate={{ boxShadow: ['0 0 0 rgba(255,59,48,0)', '0 0 20px rgba(255,59,48,0.3)', '0 0 0 rgba(255,59,48,0)'] }}
+          transition={{ duration: 2, repeat: Infinity }}
+          className="mb-8 bg-[#FF3B30]/10 border border-[#FF3B30]/50 p-5 relative overflow-hidden"
+        >
+          <div className="absolute top-0 left-0 w-1 h-full bg-[#FF3B30]" />
+          <div className="flex items-center gap-2 mb-2">
+            <Flame size={14} className="text-[#FF3B30] animate-pulse" />
+            <div className="text-[#FF3B30] text-[10px] font-mono uppercase tracking-widest font-bold">{t('farmer.burn_risk', 'CRITICAL BURN RISK')}</div>
+          </div>
+          <h3 className="text-white text-[14px] font-bold mb-1">{user.district} — Next 48h</h3>
+          <p className="text-[#A0A0A0] text-[12px] mb-4">{t('farmer.burn_desc', 'High thermal anomalies detected.')}</p>
+        </motion.div>
+
+        {/* MY LISTINGS */}
+        <div>
+          <div className="flex items-center justify-between mb-4">
+             <span className="font-mono text-[11px] text-[#1DB97A] uppercase tracking-widest">{t('farmer.my_listings', 'My Listings')}</span>
+          </div>
+          <div className="flex flex-col gap-2">
+            {myListings.length === 0 ? (
+              <div className="text-center p-6 bg-[#111111] border border-white/5 text-[#A0A0A0] text-sm font-mono">No active listings.</div>
+            ) : (
+              myListings.map((listing, i) => (
+                <div key={i} className="bg-[#050505] border border-[#1DB97A]/20 p-3 flex flex-col gap-2">
+                  <div className="flex justify-between items-center">
+                    <CropBadge cropName={listing.crop} />
+                    <span className="text-[#1DB97A] text-[9px] font-mono uppercase tracking-widest">{listing.status}</span>
                   </div>
-                  <div className="min-w-0">
-                    <div className="text-white text-[14px] font-bold truncate">{buyer.name}</div>
-                    <div className="flex items-center gap-2 mt-1">
-                      <span className="text-[#A0A0A0] text-[11px] truncate">{buyer.distance}</span>
-                      <span className="bg-[#FF8F00]/20 text-[#FF8F00] text-[9px] font-bold px-1.5 py-0.5 rounded uppercase tracking-wider shrink-0">{buyer.crop}</span>
-                    </div>
+                  <div className="flex justify-between mt-2 pt-2 border-t border-white/5">
+                    <span className="text-[#A0A0A0] text-[10px] font-mono">QTY: <strong className="text-white">{listing.qty} T</strong></span>
+                    <span className="text-[#A0A0A0] text-[10px] font-mono">CONF: <strong className="text-[#1DB97A]">{listing.conf}</strong></span>
                   </div>
                 </div>
-                <div className="flex flex-col items-end gap-1 shrink-0">
-                  <span className="text-[#1DB97A] font-semibold text-[14px]">{buyer.price}</span>
-                  <GhostButton className="h-7 text-[11px] px-3 py-0 border-white/10 hover:border-white/30 text-[#A0A0A0]">Contact</GhostButton>
-                </div>
-              </div>
-            ))}
+              ))
+            )}
           </div>
         </div>
 
       </div>
 
-      {/* VOICE AI FLOATING BUTTON */}
-      <div className="fixed bottom-6 right-6 md:right-auto md:left-1/2 md:translate-x-[180px] z-50 flex items-center group">
-        <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-300 mr-4 px-4 py-2 bg-[#111111]/80 backdrop-blur-md text-white text-[13px] font-semibold rounded-full border border-white/10 shadow-lg pointer-events-none whitespace-nowrap">
-          Voice Assistant
-        </div>
-        <motion.div 
+      {/* Voice Assistant Floating Action */}
+      <div className="fixed bottom-6 left-1/2 -translate-x-1/2 md:translate-x-[180px] z-[100]">
+        <motion.button 
           whileTap={{ scale: 0.9 }}
-          className="relative w-16 h-16 rounded-full bg-[#0B6E4F] flex items-center justify-center cursor-pointer shadow-[0_4px_32px_rgba(11,110,79,0.5)] z-10 border border-[#1DB97A]/50 shrink-0"
+          className="w-14 h-14 bg-[#1DB97A] rounded-full flex items-center justify-center text-[#050505] shadow-[0_0_30px_rgba(29,185,122,0.4)] relative"
         >
-          <motion.div
-            animate={{ scale: [1, 1.5], opacity: [0.6, 0] }}
-            transition={{ duration: 2, repeat: Infinity, ease: "easeOut" }}
-            className="absolute inset-0 rounded-full border-2 border-[#1DB97A]"
-          />
-          <motion.div
-            animate={{ scale: [1, 1.5], opacity: [0.6, 0] }}
-            transition={{ duration: 2, repeat: Infinity, ease: "easeOut", delay: 0.6 }}
-            className="absolute inset-0 rounded-full border-2 border-[#1DB97A]"
-          />
-          <Mic size={24} className="text-white relative z-10" />
-        </motion.div>
+          <div className="absolute inset-0 border border-[#1DB97A] rounded-full animate-ping opacity-50" />
+          <Mic size={24} />
+        </motion.button>
       </div>
 
     </PageTransition>
