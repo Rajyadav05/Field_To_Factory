@@ -1,0 +1,59 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700;800&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-[#0D0D0D] text-[#F5F5F5] font-sans antialiased m-0 overflow-x-hidden;
+  }
+}
+
+/* Custom Scrollbar for modern look */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(29, 185, 122, 0.2);
+  border-radius: 10px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(29, 185, 122, 0.4);
+}
+
+/* Industry Map Pulse Marker */
+@keyframes markerPulse {
+  0% { transform: scale(1); opacity: 1; }
+  100% { transform: scale(1.5); opacity: 0; }
+}
+.pulse-marker {
+  transform-origin: center;
+  transform-box: fill-box;
+  animation: markerPulse 2s infinite ease-out;
+}
+
+/* Industry Map Dash Animation */
+@keyframes dashAnim {
+  to { stroke-dashoffset: -20; }
+}
+.animated-dash {
+  stroke-dasharray: 5, 5;
+  animation: dashAnim 2s linear infinite;
+}
+
+/* Deal Ticker Animation */
+@keyframes ticker {
+  0% { transform: translateX(40vw); }
+  100% { transform: translateX(-100%); }
+}
+.animate-ticker {
+  display: inline-block;
+  white-space: nowrap;
+  animation: ticker 25s linear infinite;
+  will-change: transform;
+}
